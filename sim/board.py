@@ -1,6 +1,5 @@
 import os
-from sim.mole import Mole
-
+from sim.history import History
 
 class Board:
     """ Mode, length=16, height=16l of the board """
@@ -13,6 +12,10 @@ class Board:
         """
         self.N = N
         self.moles = []
+        self.history = History()
+
+    def sort_moles(self):
+        self.moles.sort()
 
     def map_export(self, name: str, directory: str = "maps/"):
         """Export the board as a .map file in the map folder
@@ -22,6 +25,7 @@ class Board:
         :param directory: directory of the file to save, defaults to "../maps/"
         :type directory: str, optional
         """
+        self.sort_moles()
         complete_path = os.path.join(directory, name)
         with open(complete_path, "w") as map:
             map.write(f"{self.N}\n")
@@ -34,6 +38,7 @@ class Board:
         :param path: Path of the file
         :type path: str
         """
+        self.history.new_map()
         if not os.path.exists(path):
             raise RuntimeError("Path not valid !")
         with open(path, "r") as map:
@@ -56,15 +61,17 @@ class Board:
         neighbors = [position]
         if position % self.N != 0:
             neighbors.append(position - 1)
-        if position % self.N != self.N - 1 :
+        if position % self.N < self.N - 1 and position < self.N ** 2:
             neighbors.append(position + 1)
         if position // self.N != 0:
             neighbors.append(position - self.N )
-        if position // self.N != self.N + 1:
+        if position + self.N < self.N ** 2 :
             neighbors.append(position + self.N)
         return neighbors
 
-    def mole_clicked(self, x, y, is_quick):
+    def mole_clicked(self, x, y, is_quick, apply=True):
+        if apply and (x,y) != self.history.last:
+            self.history.add_click(x, y)
         position = self.N * y + x
         if is_quick:
             # Quick edit : the game is not on
@@ -76,11 +83,19 @@ class Board:
         else:
             # Touching a mole changes its neighbors
             neighbors = self.around_moles(position)
+            added_value = len(self.moles)
             for neighbor in neighbors:
                 if neighbor in self.moles:
-                    self.moles.remove(neighbor)
+                    added_value -= 1
+                    if apply:
+                        self.moles.remove(neighbor)
                 else:
-                    self.moles.append(neighbor)
+                    added_value += 1
+                    if apply:
+                        self.moles.append(neighbor)
+        # If not applied, just returns the added_value
+        if not apply:
+            return added_value
         # Check if finished
         if self.moles == []:
             return True

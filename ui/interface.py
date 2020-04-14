@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import filedialog
 from sim.board import Board
-from sim.history import History
 from random import randint
 import webbrowser
 
@@ -25,7 +24,6 @@ class GraphicalUserInterface:
         """
         map_file = filedialog.askopenfilename(initialdir = "maps/",title = "Select file",filetypes = (("map files","*.map"),("all files","*.*")))
         self.board.map_import(map_file)
-        self.history.new_map()
         self.reload()
 
     def export_map(self):
@@ -53,7 +51,7 @@ class GraphicalUserInterface:
             y = randint(0, size_map)
             self.grass_clicked(x,y)
         self.is_quick = save_quick
-        self.history.new_map()
+        self.board.history.new_map()
         self.reload()
 
     def new_map(self):
@@ -70,7 +68,6 @@ class GraphicalUserInterface:
             else:
                 self.board = Board(int(number))
             popup_window.destroy()
-            self.history.new_map()
             self.reload()
 
         popup_window = Toplevel()
@@ -94,7 +91,6 @@ class GraphicalUserInterface:
     def mole_clicked(self, x, y):
         """ Callback when a mole is clicked """
         is_finished = self.board.mole_clicked(x, y, self.is_quick)
-        self.history.add_click(x,y)
         self.reload()
         if is_finished:
             self.finish()
@@ -115,13 +111,13 @@ class GraphicalUserInterface:
         self._init_grid()
 
     def undo(self):
-        undone = self.history.undo()
+        undone = self.board.history.undo()
         if undone is not None:
             self.board.mole_clicked(undone[0], undone[1], False)
             self.reload()
 
     def next(self):
-        forward = self.history.next()
+        forward = self.board.history.next()
         if forward is not None:
             self.board.mole_clicked(forward[0], forward[1], False)
             self.reload()
@@ -131,8 +127,6 @@ class GraphicalUserInterface:
         self.master.title("DreamAI game")
         self.master.grid()
         self.board = board
-        ## History
-        self.history = History()
         ## Menu
         self.menu = Menu(self.master)
         self.map_menu = Menu(self.menu, tearoff=0)

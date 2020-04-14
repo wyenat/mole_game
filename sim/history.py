@@ -3,6 +3,7 @@ class History:
     def __init__(self):
         self.history = []
         self.deleted = []
+        self.last = None
 
     def undo(self):
         """ Undo the previous click
@@ -11,6 +12,7 @@ class History:
         if self.history != []:
             undone = self.history.pop()
             self.deleted.append(undone)
+        self.last = undone
         return undone
 
 
@@ -21,6 +23,7 @@ class History:
         if self.deleted != []:
             forward = self.deleted.pop()
             self.history.append(forward)
+        self.last = forward
         return forward
 
     def new_map(self):
