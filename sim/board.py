@@ -1,8 +1,9 @@
 import os
 from sim.history import History
 
+
 class Board:
-    """ Mode, length=16, height=16l of the board """
+    """ Class that specify the map """
 
     def __init__(self, N: int):
         """Builds the board and places the moles
@@ -15,6 +16,8 @@ class Board:
         self.history = History()
 
     def sort_moles(self):
+        """ Sort moles by position
+        """
         self.moles.sort()
 
     def map_export(self, name: str, directory: str = "maps/"):
@@ -48,29 +51,65 @@ class Board:
             position = int(mole)
             self.moles.append(position)
 
-    def add_mole(self, x, y):
+    def add_mole(self, x: int, y: int):
+        """Add a mol in specified position
+
+        :param x: coordinate x of the mole
+        :type x: int
+        :param y: coordinate y of the mole
+        :type y: int
+        """
         position = self.N * y + x
         self.moles.append(position)
 
-    def get_size(self):
+    def get_size(self) -> int:
+        """ Size of the map
+
+        :return: Size of the map
+        :rtype: int
+        """
         return self.N
-    
-    def around_moles(self, position):
-        """ returns the cases around the position 
+
+    def around_moles(self, position: int) -> list:
+        """returns the cases around the position
+
+        :param position: Position of the mole
+        :type position: int
+        :return: Cases around that moles
+        :rtype: list
         """
         neighbors = [position]
+        # Border cases
+        # Left
         if position % self.N != 0:
             neighbors.append(position - 1)
+        # Right
         if position % self.N < self.N - 1 and position < self.N ** 2:
             neighbors.append(position + 1)
+        # Top
         if position // self.N != 0:
-            neighbors.append(position - self.N )
-        if position + self.N < self.N ** 2 :
+            neighbors.append(position - self.N)
+        # Bottom
+        if position + self.N < self.N ** 2:
             neighbors.append(position + self.N)
         return neighbors
 
-    def mole_clicked(self, x, y, is_quick, apply=True):
-        if apply and (x,y) != self.history.last:
+    def mole_clicked(self, x: int, y: int, is_quick: bool, apply: bool = True):
+        """Callback function for when a mole is touched.
+
+        :param x: position x of the mole
+        :type x: int
+        :param y: position y of the mole
+        :type y: int
+        :param is_quick: if quick edit of the map is enabled
+        :type is_quick: bool
+        :param apply: if the modification should be applied, defaults to True
+        :type apply: bool, optional
+        :return: if apply=True, returns a bool that confirms if the map is finished.
+        Else, returns the difference in mole numbers
+        :rtype: bool
+        """
+        if apply and (x, y) != self.history.last:
             self.history.add_click(x, y)
         position = self.N * y + x
         if is_quick:
@@ -100,4 +139,3 @@ class Board:
         if self.moles == []:
             return True
         return False
-    

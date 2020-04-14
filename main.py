@@ -3,14 +3,13 @@ from sim.board import Board
 from sim.solution import Solution
 from ui.interface import GraphicalUserInterface
 
+
 def main():
-    # Opens a rando
     board = Board(5)
-    board.map_import("maps/map_3x3.map")
+    board.map_import("maps/map_4x4.map")
     solution = Solution(board)
     solution.bellman()
-    GraphicalUserInterface(board)
-
+    # GraphicalUserInterface(board)
 
 
 if __name__ == "__main__":
