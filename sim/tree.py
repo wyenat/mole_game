@@ -42,14 +42,22 @@ class Tree:
         return self.value < other.value
 
     def pretty_print(self):
-        if self.children is None:
-            return f"{self.state}"
+        if self.state == "[]":
+            return f"[] --- Valid path !"
+        if self.value == float("inf"):
+            return f"{self.state} --- Fully explored, no solutions"
         if self.children == []:
             return f"{self.state}\n {'  |' * (1+self.depth)} ???"
         string = f"{self.state}"
+        path = ""
         for child in self.children:
             string += f"\n {'  |' * (1+self.depth)} {child.pretty_print()}"
         return string
+
+    def print_parents(self):
+        if self.parent is None:
+            return f"Moles clicked in order:"
+        return self.parent.print_parents() + f"\n{self.action}" 
 
     @staticmethod
     def rot_and_sym(size_of_board, current_state) -> list:

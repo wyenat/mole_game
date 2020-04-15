@@ -48,6 +48,7 @@ class Board:
         :type path: str
         """
         self.history.new_map()
+        self.moles = []
         if not os.path.exists(path):
             raise RuntimeError("Path not valid !")
         with open(path, "r") as map:
@@ -107,7 +108,7 @@ class Board:
             neighbors.append(position + self.N)
         return neighbors
 
-    def mole_clicked(self, x: int, y: int, is_quick: bool, apply: bool = True):
+    def mole_clicked(self, x: int, y: int, is_quick: bool, apply: bool = True, update_tree = False):
         """Callback function for when a mole is touched.
 
         :param x: position x of the mole
@@ -133,6 +134,10 @@ class Board:
                 self.moles.remove(mole)
             else:
                 self.moles.append(mole)
+                # Check if finished
+            if self.moles == []:
+                return True
+            return False
         else:
             # Touching a mole changes its neighbors
             neighbors = self.around_moles(position)
@@ -147,7 +152,7 @@ class Board:
                     new.append(neighbor)
         if apply:
             self.moles = new
-        else:
+        if update_tree:
             # Update the tree
             self.current.add_children(new, value=added_value, action=position)
 
