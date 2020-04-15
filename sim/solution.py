@@ -1,4 +1,5 @@
 from sim.board import Board
+from sim.tree import Tree
 
 
 class Solution:
@@ -43,47 +44,55 @@ class Solution:
         """
         return len(self.board.moles)
 
+    def build_branch(self):
+        self.board.sort_moles()
+        for mole in self.board.moles:
+            mole_y = mole // self.board.N
+            mole_x = mole % self.board.N
+            self.possible_actions[mole] = self.board.mole_clicked(
+                mole_x, mole_y, False, False
+            )
+        print(f"Possible actions = {self.possible_actions}")
+
+    def determine_best(self):
+        finished_round = False
+        while not finished_round:
+            if len(self.possible_actions) == 0:
+                print("No more actions, revert")
+                undone = self.board.history.undo()
+                if undone is not None:
+                    print(f"BRANCH Reverting by clicking {undone[0], undone[1]}")
+                    self.board.mole_clicked(undone[0], undone[1], False)
+                    self.board.current = self.board.current.parent
+                break
+            best = min(self.possible_actions, key=self.possible_actions.get)
+            # print(f"best = {best}")
+            mole_y = best // self.board.N
+            mole_x = best % self.board.N
+            self.board.mole_clicked(mole_x, mole_y, False, True)
+            if str(self.board.moles) in self.states_encountered:
+                print(f"State = {self.board.moles} already encountered !")
+                undone = self.board.history.undo()
+                if undone is not None:
+                    print(f"Reverting by clicking {undone[0], undone[1]}")
+                    self.board.mole_clicked(undone[0], undone[1], False)
+                self.possible_actions.pop(best)
+                finished_round = False
+            else:
+                self.states_encountered[str(self.board.moles)] = len(self.board.moles)
+                self.board.current = self.board.current.children[-1]
+                finished_round = True
+                self.possible_actions = {}
+            i += 1
+
     def bellman(self):
         """ Apply of the Bellman algorithm
         """
         i = 0
         self.states_encountered[str(self.board.moles)] = len(self.board.moles)
-        while not self.stop_condition() and i < 2 ** ((self.board.N + 1) ** 2):
+        while not self.stop_condition() and i < 3:
             print(f"\tEntering {i}")
-            self.board.sort_moles()
-            for mole in self.board.moles:
-                mole_y = mole // self.board.N
-                mole_x = mole % self.board.N
-                self.possible_actions[mole] = self.cost_action(mole_x, mole_y)
-            print(f"Possible actions = {self.possible_actions}")
-            finished_round = False
-            while not finished_round:
-                if len(self.possible_actions) == 0:
-                    print("No more actions, revert")
-                    undone = self.board.history.undo()
-                    if undone is not None:
-                        print(f"BRANCH Reverting by clicking {undone[0], undone[1]}")
-                        self.board.mole_clicked(undone[0], undone[1], False)
-                    break
-                best = min(self.possible_actions, key=self.possible_actions.get)
-                print(f"best = {best}")
-                mole_y = best // self.board.N
-                mole_x = best % self.board.N
-                self.board.mole_clicked(mole_x, mole_y, False, True)
-                if str(self.board.moles) in self.states_encountered:
-                    print(f"State = {self.board.moles} already encountered !")
-                    undone = self.board.history.undo()
-                    if undone is not None:
-                        print(f"Reverting by clicking {undone[0], undone[1]}")
-                        self.board.mole_clicked(undone[0], undone[1], False)
-                    self.possible_actions.pop(best)
-                    finished_round = False
-
-                else:
-                    self.states_encountered[str(self.board.moles)] = len(
-                        self.board.moles
-                    )
-                    finished_round = True
-                    self.possible_actions = {}
-            i += 1
-        print(i, len(self.states_encountered))
+            self.build_branch()
+            print("Choosing best branch")
+            self.determine_best()
+        print(f"Met {len(self.board.tree.states)} different states")

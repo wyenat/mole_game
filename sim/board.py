@@ -1,5 +1,7 @@
 import os
 from sim.history import History
+from sim.tree import Tree
+import copy
 
 
 class Board:
@@ -14,6 +16,8 @@ class Board:
         self.N = N
         self.moles = []
         self.history = History()
+        self.tree = Tree(state=str(self.moles), size_of_board=self.get_size())
+        self.current = self.tree
 
     def sort_moles(self):
         """ Sort moles by position
@@ -50,6 +54,8 @@ class Board:
         for mole in read[1].split(" ")[:-1]:
             position = int(mole)
             self.moles.append(position)
+        self.tree = Tree(state=str(self.moles), size_of_board=self.get_size())
+        self.current = self.tree
 
     def add_mole(self, x: int, y: int):
         """Add a mol in specified position
@@ -123,18 +129,20 @@ class Board:
             # Touching a mole changes its neighbors
             neighbors = self.around_moles(position)
             added_value = len(self.moles)
+            new = copy.deepcopy(self.moles)
             for neighbor in neighbors:
                 if neighbor in self.moles:
                     added_value -= 1
-                    if apply:
-                        self.moles.remove(neighbor)
+                    new.remove(neighbor)
                 else:
                     added_value += 1
-                    if apply:
-                        self.moles.append(neighbor)
+                    new.append(neighbor)
         # If not applied, just returns the added_value
+        self.current.add_children([new])
         if not apply:
             return added_value
+        else:
+            self.moles = new
         # Check if finished
         if self.moles == []:
             return True
