@@ -2,7 +2,9 @@ class Tree:
     """Builds the tree of the explored states
     """
 
-    def __init__(self, state: str, size_of_board, parent=None, states=[]):
+    def __init__(
+        self, state: str, action, value, size_of_board, parent=None, states=[]
+    ):
         """
         :param state: state at root of the tree
         :type state: str
@@ -12,26 +14,32 @@ class Tree:
         self.size_of_board = size_of_board
         self.children = []
         self.states = states
-        self.depth = 0 if parent == None else parent.depth + 1
+        self.value = value
+        self.action = action
+        self.depth = 0 if parent is None else parent.depth + 1
 
-    def add_children(self, children):
-        for child in children:
-            if str(child) not in self.states:
-                equivalents = self.rot_and_sym(
-                    size_of_board=self.size_of_board, current_state=child
-                )
-                self.children.append(
-                    Tree(
-                        state=equivalents[0],
-                        size_of_board=self.size_of_board,
-                        parent=self,
-                        states=self.states,
-                    )
-                )
-                for equivalent in equivalents:
-                    self.states.append(equivalent)
-            else:
-                self.children = None
+    def add_children(self, child, value, action):
+        if str(child) not in self.states:
+            equivalents = self.rot_and_sym(
+                size_of_board=self.size_of_board, current_state=child
+            )
+            tree = Tree(
+                state=equivalents[0],
+                value=value,
+                action=action,
+                size_of_board=self.size_of_board,
+                parent=self,
+                states=self.states,
+            )
+            self.children.append(tree)
+            for equivalent in equivalents:
+                self.states.append(equivalent)
+
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __lt__(self, other):
+        return self.value < other.value
 
     def pretty_print(self):
         if self.children is None:
@@ -81,5 +89,9 @@ class Tree:
         rot270 = rotate(rot180)
         rot = [rot0, rot90, rot180, rot270]
         sym = [symetry(current_state, "x"), symetry(current_state, "y")]
-        rotnsym = list(set([str(to_hash) for to_hash in rot + sym]))
+        rotnsym = []
+        for state in rot + sym:
+            str_state = str(state)
+            if str_state not in rotnsym:
+                rotnsym.append(str_state)
         return rotnsym

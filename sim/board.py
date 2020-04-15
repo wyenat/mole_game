@@ -16,7 +16,9 @@ class Board:
         self.N = N
         self.moles = []
         self.history = History()
-        self.tree = Tree(state=str(self.moles), size_of_board=self.get_size())
+        self.tree = Tree(
+            state=str(self.moles), action=None, value=0, size_of_board=self.get_size()
+        )
         self.current = self.tree
 
     def sort_moles(self):
@@ -54,7 +56,12 @@ class Board:
         for mole in read[1].split(" ")[:-1]:
             position = int(mole)
             self.moles.append(position)
-        self.tree = Tree(state=str(self.moles), size_of_board=self.get_size())
+        self.tree = Tree(
+            state=str(self.moles),
+            action=None,
+            value=len(self.moles),
+            size_of_board=self.get_size(),
+        )
         self.current = self.tree
 
     def add_mole(self, x: int, y: int):
@@ -115,6 +122,7 @@ class Board:
         Else, returns the difference in mole numbers
         :rtype: bool
         """
+        # History Managed
         if apply and (x, y) != self.history.last:
             self.history.add_click(x, y)
         position = self.N * y + x
@@ -137,12 +145,12 @@ class Board:
                 else:
                     added_value += 1
                     new.append(neighbor)
-        # If not applied, just returns the added_value
-        self.current.add_children([new])
-        if not apply:
-            return added_value
-        else:
+        if apply:
             self.moles = new
+        else:
+            # Update the tree
+            self.current.add_children(new, value=added_value, action=position)
+
         # Check if finished
         if self.moles == []:
             return True
