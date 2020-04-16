@@ -108,7 +108,9 @@ class Board:
             neighbors.append(position + self.N)
         return neighbors
 
-    def mole_clicked(self, x: int, y: int, is_quick: bool, apply: bool = True, update_tree = False):
+    def mole_clicked(
+        self, x: int, y: int, is_quick: bool, apply: bool = True, update_tree=False
+    ):
         """Callback function for when a mole is touched.
 
         :param x: position x of the mole
@@ -154,7 +156,9 @@ class Board:
             self.moles = new
         if update_tree:
             # Update the tree
-            self.current.add_children(new, value=added_value, action=position)
+            self.current.add_children(
+                new, value=added_value + self.current.depth, action=position
+            )
 
         # Check if finished
         if self.moles == []:

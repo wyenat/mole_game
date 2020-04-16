@@ -3,7 +3,7 @@ class Tree:
     """
 
     def __init__(
-        self, state: str, action, value, size_of_board, parent=None, states=[]
+        self, state: str, action, value, size_of_board, parent=None, states=set()
     ):
         """
         :param state: state at root of the tree
@@ -12,13 +12,14 @@ class Tree:
         self.parent = parent
         self.state = state
         self.size_of_board = size_of_board
-        self.children = []
+        self.children = list()
         self.states = states
         self.value = value
         self.action = action
         self.depth = 0 if parent is None else parent.depth + 1
 
     def add_children(self, child, value, action):
+        child.sort()
         if str(child) not in self.states:
             equivalents = self.rot_and_sym(
                 size_of_board=self.size_of_board, current_state=child
@@ -33,7 +34,7 @@ class Tree:
             )
             self.children.append(tree)
             for equivalent in equivalents:
-                self.states.append(equivalent)
+                self.states.add(str(equivalent))
 
     def __eq__(self, other):
         return self.value == other.value
@@ -45,11 +46,10 @@ class Tree:
         if self.state == "[]":
             return f"[] --- Valid path !"
         if self.value == float("inf"):
-            return f"{self.state} --- Fully explored, no solutions"
+            return f"{self.state, self.action}"
         if self.children == []:
-            return f"{self.state}\n {'  |' * (1+self.depth)} ???"
-        string = f"{self.state}"
-        path = ""
+            return f"{self.state, self.action}\n {'  |' * (1+self.depth)} ???"
+        string = f"{self.state, self.action}"
         for child in self.children:
             string += f"\n {'  |' * (1+self.depth)} {child.pretty_print()}"
         return string
@@ -57,7 +57,15 @@ class Tree:
     def print_parents(self):
         if self.parent is None:
             return f"Moles clicked in order:"
-        return self.parent.print_parents() + f"\n{self.action}" 
+        return self.parent.print_parents() + f"\n{self.action}"
+
+    def get_actions(self):
+        if self.parent is None:
+            return []
+        return self.parent.get_actions() + [self.action]
+
+    def __hash__(self):
+        return hash(self.state)
 
     @staticmethod
     def rot_and_sym(size_of_board, current_state) -> list:
