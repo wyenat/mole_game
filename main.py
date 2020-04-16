@@ -8,10 +8,10 @@ from time import clock
 def main():
     board = Board(5)
     board.map_import("maps/4x4.map")
-    solution = Solution(board)
-    top = clock()
-    solution.bellman()
-    print(f"Done in {clock() - top} s")
+    # solution = Solution(board)
+    # top = clock()
+    # solution.bellman()
+    # print(f"Done in {clock() - top} s")
     print(f"Met {len(board.tree.states)} different states")
     GraphicalUserInterface(board)
 

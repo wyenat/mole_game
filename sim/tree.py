@@ -57,7 +57,10 @@ class Tree:
     def print_parents(self):
         if self.parent is None:
             return f"Moles clicked in order:"
-        return self.parent.print_parents() + f"\n{self.action}"
+        return (
+            self.parent.print_parents()
+            + f"\n{(self.action // self.size_of_board, self.action % self.size_of_board)}"
+        )
 
     def get_actions(self):
         if self.parent is None:

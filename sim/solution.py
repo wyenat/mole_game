@@ -79,16 +79,18 @@ class Solution:
         i = 0
         while not self.stop_reached():
             self.build_branch()
-            # if not i % 250:
-            # print(
-            #     f"Entering {i}, current is {self.board.current.state}. \n{len(self.possible_actions)} Actions possible. \n{self.board.current.depth} of depth \n{len(self.board.tree.states)} states already explored \n{len(self.board.current.children)} children"
-            # )
-            if len(self.possible_actions) == 0:
+            if not i % 1000:
                 print(
-                    f"Covered everything, best solution is : \n {self.best_solution.print_parents() if self.best_solution is not None else None}"
+                    f"Entering {i}, current is {self.board.current.state}. \n{len(self.possible_actions)} Actions possible. \n{self.board.current.depth} of depth \n{len(self.board.tree.states)} states already explored \n{len(self.board.current.children)} children"
                 )
+            if len(self.possible_actions) == 0:
                 self.stop = True
             else:
                 best = self.determine_best()
                 self.get_to(best)
                 i += 1
+        return (
+            self.best_solution.print_parents()
+            if self.best_solution is not None
+            else "There is no solutions"
+        )
