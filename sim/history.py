@@ -1,3 +1,6 @@
+import os.path
+
+
 class History:
     """ Allow the usage of history """
 
@@ -45,3 +48,9 @@ class History:
         """
         self.deleted = []
         self.history.append((x, y))
+
+    def log(self, directory, name):
+        complete_path = os.path.join(directory, name)
+        with open(complete_path, "w") as log:
+            log.write(f"History of moles clicked :")
+            log.write(f"{self.history}")

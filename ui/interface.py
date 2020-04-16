@@ -139,8 +139,8 @@ class GraphicalUserInterface:
 
     def solve(self):
         def process():
-            solution = Solution(self.board)
             popup_window.destroy()
+            solution = Solution(self.board)
             actions = solution.bellman()
             solution_window = Toplevel()
             solution_window.wm_title("Algorithm finished")
@@ -164,6 +164,15 @@ class GraphicalUserInterface:
         button_ok.grid(row=1, column=1)
         button_nope.grid(row=1, column=0)
 
+    def log(self):
+        ask_save = filedialog.asksaveasfile(
+            mode="w", initialdir="logs/", defaultextension=".history"
+        )
+        if ask_save is not None:
+            name = ask_save.name.split("/")[-1]
+            directory = "logs/"
+            self.board.history.log(directory=directory, name=name)
+
     def __init__(self, board: Board):
         self.master = Tk()
         self.master.title("DreamAI game")
@@ -184,10 +193,15 @@ class GraphicalUserInterface:
             label="Manually change state", command=self.change_quick
         )
         self.moles_menu.add_command(label="Place at random", command=self.random_moles)
+
+        self.history_menu = Menu(self.menu, tearoff=2)
+        self.history_menu.add_command(label="Undo", command=self.undo)
+        self.history_menu.add_command(label="Next", command=self.next)
+        self.history_menu.add_command(label="Log", command=self.log)
+
         self.menu.add_cascade(label="Map", menu=self.map_menu)
         self.menu.add_cascade(label="Moles", menu=self.moles_menu)
-        self.menu.add_command(label="Undo", command=self.undo)
-        self.menu.add_command(label="Next", command=self.next)
+        self.menu.add_cascade(label="History", menu=self.history_menu)
         self.menu.add_command(label="Solve", command=self.solve)
         self.menu.add_command(label="Help", command=self.show_help)
         self.master.config(menu=self.menu)
