@@ -92,18 +92,18 @@ class Solution:
         )
 
     def tree_to_here(self):
+        if self.board.current.depth > self.board.N ** 2:
+            self.board.current.states.remove(self.board.current.state)
+            return
         print(f"entering for {self.board.current.state}")
-        if self.board.current.state == "[]":
-            positions = range(self.board.get_size())
-        else:
-            positions = self.board.moles
+        positions = [
+            i for i in range(self.board.get_size() ** 2) if i not in self.board.moles
+        ]
         for position in positions:
-            neighbours = self.board.around_moles(position)
-            for neigh in neighbours:
-                mole_y = neigh // self.board.N
-                mole_x = neigh % self.board.N
-                if neigh not in self.board.moles:
-                    self.board.mole_clicked(mole_x, mole_y, False, False, True)
+            mole_y = position // self.board.N
+            mole_x = position % self.board.N
+            self.board.mole_clicked(mole_x, mole_y, False, False, True)
+        print(f"{self.board.current.state} has {len(self.board.current.children)}")
         for child in self.board.current.children:
             save = copy.deepcopy(self.board.current)
             self.board.current = child
