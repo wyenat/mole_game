@@ -6,7 +6,7 @@ from time import clock
 
 
 def main():
-    board = Board(5)
+    board = Board(3)
     # board.map_import("maps/map_3x3.map")
     # solution = Solution(board)
     # top = clock()

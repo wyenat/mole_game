@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import filedialog
 from sim.board import Board
-from sim.solution import Solution
+
 from random import randint
 import webbrowser
 
@@ -53,11 +53,12 @@ class GraphicalUserInterface:
         save_quick = self.is_quick
         self.is_quick = True
         for mole in range(number_of_moles):
-            x = randint(0, size_map)
-            y = randint(0, size_map)
+            x = randint(0, size_map - 1)
+            y = randint(0, size_map - 1)
             self.grass_clicked(x, y)
         self.is_quick = save_quick
         self.board.history.new_map()
+        self.board.update_tree()
         self.reload()
 
     def new_map(self):
@@ -137,15 +138,43 @@ class GraphicalUserInterface:
             self.board.mole_clicked(forward[0], forward[1], False)
             self.reload()
 
+    def log_tree(self):
+        ask_save = filedialog.asksaveasfile(
+            mode="w", initialdir="trees/", defaultextension=".tree"
+        )
+        if ask_save is not None:
+            name = ask_save.name.split("/")[-1]
+            self.board.log_tree(name=ask_save.name, extensive=False)
+
+    def log_tree_extensive(self):
+        ask_save = filedialog.asksaveasfile(
+            mode="w", initialdir="trees/", defaultextension=".extensive-tree"
+        )
+        if ask_save is not None:
+            name = ask_save.name.split("/")[-1]
+            self.board.log_tree(name=ask_save.name, extensive=True)
+
     def solve(self):
         def process():
             popup_window.destroy()
-            solution = Solution(self.board)
-            actions = solution.bellman()
+            self.board.update_tree()
+            actions = self.board.solve()
             solution_window = Toplevel()
             solution_window.wm_title("Algorithm finished")
             l = Label(master=solution_window, text=f"Solution found : {actions}")
             l.grid(row=0, column=0)
+            log_tree = Button(
+                master=solution_window,
+                text="Log Tree (Without equivalent states)",
+                command=self.log_tree,
+            )
+            extensive_log = Button(
+                master=solution_window,
+                text="Log Tree (ALL states)",
+                command=self.log_tree_extensive,
+            )
+            log_tree.grid(row=1, column=0)
+            extensive_log(row=1, column=1)
 
         def abort():
             popup_window.destroy()
@@ -173,6 +202,10 @@ class GraphicalUserInterface:
             directory = "logs/"
             self.board.history.log(directory=directory, name=name)
 
+    def generate(self):
+        self.board.solution.tree_to_here()
+        self.board.log_tree("test", extensive=False)
+
     def __init__(self, board: Board):
         self.master = Tk()
         self.master.title("DreamAI game")
@@ -199,10 +232,14 @@ class GraphicalUserInterface:
         self.history_menu.add_command(label="Next", command=self.next)
         self.history_menu.add_command(label="Log", command=self.log)
 
+        self.menu_solution = Menu(self.menu, tearoff=3)
+        self.menu_solution.add_command(label="Solve", command=self.solve)
+        self.menu_solution.add_command(label="Generate Graph", command=self.generate)
+
         self.menu.add_cascade(label="Map", menu=self.map_menu)
         self.menu.add_cascade(label="Moles", menu=self.moles_menu)
         self.menu.add_cascade(label="History", menu=self.history_menu)
-        self.menu.add_command(label="Solve", command=self.solve)
+        self.menu.add_cascade(label="Solution", menu=self.menu_solution)
         self.menu.add_command(label="Help", command=self.show_help)
         self.master.config(menu=self.menu)
 

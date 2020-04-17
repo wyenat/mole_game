@@ -43,15 +43,24 @@ class Tree:
         return self.value < other.value
 
     def pretty_print(self):
-        if self.state == "[]":
-            return f"[] --- Valid path !"
-        if self.value == float("inf"):
-            return f"{self.state, self.action}"
+        # if self.state == "[]":
+        #     return f"[] --- Valid path !"
         if self.children == []:
-            return f"{self.state, self.action}\n {'  |' * (1+self.depth)} ???"
+            return f"{self.state, self.action}"
         string = f"{self.state, self.action}"
         for child in self.children:
             string += f"\n {'  |' * (1+self.depth)} {child.pretty_print()}"
+        return string
+
+    def extensive_print(self):
+        # if self.state == "[]":
+        #     return f"[] --- Valid path !"
+        if self.children == []:
+            return f"{self.state, self.action}"
+        state = [int(i) for i in self.state[1:-1].split(",")]
+        string = f"{self.rot_and_sym(self.size_of_board, state)}"
+        for child in self.children:
+            string += f"\n {'  |' * (1+self.depth)} {child.extensive_print()}"
         return string
 
     def print_parents(self):
@@ -107,7 +116,15 @@ class Tree:
         rot180 = rotate(rot90)
         rot270 = rotate(rot180)
         rot = [rot0, rot90, rot180, rot270]
-        sym = [symetry(current_state, "x"), symetry(current_state, "y")]
+        sym_x = symetry(current_state, "x")
+        sym_x90 = rotate(sym_x)
+        sym_x180 = rotate(sym_x90)
+        sym_x270 = rotate(sym_x180)
+        sym_y = symetry(current_state, "x")
+        sym_y90 = rotate(sym_y)
+        sym_y180 = rotate(sym_y90)
+        sym_y270 = rotate(sym_y180)
+        sym = [sym_x, sym_x90, sym_x180, sym_x270, sym_y, sym_y90, sym_y180, sym_y270]
         rotnsym = []
         for state in rot + sym:
             str_state = str(state)

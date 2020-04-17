@@ -2,6 +2,7 @@ import os
 from sim.history import History
 from sim.tree import Tree
 import copy
+from sim.solution import Solution
 
 
 class Board:
@@ -16,10 +17,38 @@ class Board:
         self.N = N
         self.moles = []
         self.history = History()
+        self.update_tree()
+
+    def update_tree(self):
+        self.moles.sort()
+        empty_set = set()
         self.tree = Tree(
-            state=str(self.moles), action=None, value=0, size_of_board=self.get_size()
+            state=str(self.moles),
+            action=None,
+            value=0,
+            size_of_board=self.get_size(),
+            states=empty_set,
         )
         self.current = self.tree
+        self.solution = Solution(self)
+
+    def log_tree(self, name, extensive):
+        complete_path = os.path.join("trees/", name)
+        with open(complete_path, "w") as tree:
+            tree.write(
+                "Keys : (state, mole clicked from the parent to get to this state)\n"
+            )
+            tree.write("Parent\n|   State\n|   |   Child\n\n")
+            tree.write(
+                f"Explored {len(self.tree.states)} out of the {2**(self.N ** 2)} theorical states.\n\
+                This makes {len(self.tree.states) / 2**(self.N ** 2) * 100}%. \n\
+                Note that 100% is not always possible \n\
+                {'Note that equivalent states are not shown. ( Rotations and symetries of shown state is implied)' if not extensive else ''} \n\n\n"
+            )
+            if extensive:
+                tree.write(self.tree.extensive_print())
+            else:
+                tree.write(self.tree.pretty_print())
 
     def sort_moles(self):
         """ Sort moles by position
@@ -57,13 +86,7 @@ class Board:
         for mole in read[1].split(" ")[:-1]:
             position = int(mole)
             self.moles.append(position)
-        self.tree = Tree(
-            state=str(self.moles),
-            action=None,
-            value=len(self.moles),
-            size_of_board=self.get_size(),
-        )
-        self.current = self.tree
+        self.update_tree()
 
     def add_mole(self, x: int, y: int):
         """Add a mol in specified position
@@ -75,6 +98,16 @@ class Board:
         """
         position = self.N * y + x
         self.moles.append(position)
+
+    def solve(self):
+        self.update_tree()
+        save_current = copy.deepcopy(self.current)
+        save_moles = copy.deepcopy(self.moles)
+        actions = self.solution.bellman()
+        self.current = save_current
+        self.moles = save_moles
+        self.history.new_map()
+        return actions
 
     def get_size(self) -> int:
         """ Size of the map

@@ -1,4 +1,3 @@
-from sim.board import Board
 from sim.tree import Tree
 import time
 import copy
@@ -9,7 +8,7 @@ class Solution:
     to find a dynamic programing solution to this problem.
     """
 
-    def __init__(self, board: Board):
+    def __init__(self, board):
         """
         :param board: board on which the solution will be applied
         :type board: Board
@@ -63,12 +62,13 @@ class Solution:
         if self.board.current.state == "[]":
             print(f"PATH FOUND ! \n {self.board.current.print_parents()}")
             self.best_solution = self.board.current
-            self.set_max_depth(self.board.current.depth)
+            # self.set_max_depth(self.board.current.depth)
             for possible in self.possible_actions.copy():
                 if possible.depth >= self.get_max_depth():
                     self.possible_actions.remove(possible)
+            if len(self.possible_actions) == 0:
+                return self.board.current
         best = min(self.possible_actions)
-        # print(f"\tbest is {best.state} with value {best.value}")
         best.value = float("inf")
         self.possible_actions.remove(best)
         return best
@@ -79,10 +79,6 @@ class Solution:
         i = 0
         while not self.stop_reached():
             self.build_branch()
-            if not i % 1000:
-                print(
-                    f"Entering {i}, current is {self.board.current.state}. \n{len(self.possible_actions)} Actions possible. \n{self.board.current.depth} of depth \n{len(self.board.tree.states)} states already explored \n{len(self.board.current.children)} children"
-                )
             if len(self.possible_actions) == 0:
                 self.stop = True
             else:
@@ -94,3 +90,25 @@ class Solution:
             if self.best_solution is not None
             else "There is no solutions"
         )
+
+    def tree_to_here(self):
+        print(f"entering for {self.board.current.state}")
+        if self.board.current.state == "[]":
+            positions = range(self.board.get_size())
+        else:
+            positions = self.board.moles
+        for position in positions:
+            neighbours = self.board.around_moles(position)
+            for neigh in neighbours:
+                mole_y = neigh // self.board.N
+                mole_x = neigh % self.board.N
+                if neigh not in self.board.moles:
+                    self.board.mole_clicked(mole_x, mole_y, False, False, True)
+        for child in self.board.current.children:
+            save = copy.deepcopy(self.board.current)
+            self.board.current = child
+            mole_y = child.action // self.board.N
+            mole_x = child.action % self.board.N
+            self.board.mole_clicked(mole_x, mole_y, False, True, True)
+            self.tree_to_here()
+            self.board.current = save
