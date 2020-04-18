@@ -6,13 +6,13 @@ from time import clock
 
 
 def main():
+    # Create a map
     board = Board(3)
-    # board.map_import("maps/map_3x3.map")
-    # solution = Solution(board)
-    # top = clock()
-    # solution.bellman()
-    # print(f"Done in {clock() - top} s")
-    # print(f"Met {len(board.tree.states)} different states")
+
+    # Optional : pre load a map
+    board.map_import("maps/map_3x3.map")
+    
+    # Start the graphical interface
     GraphicalUserInterface(board)
 
 

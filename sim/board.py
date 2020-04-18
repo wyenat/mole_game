@@ -154,9 +154,8 @@ class Board:
         :type is_quick: bool
         :param apply: if the modification should be applied, defaults to True
         :type apply: bool, optional
-        :return: if apply=True, returns a bool that confirms if the map is finished.
-        Else, returns the difference in mole numbers
-        :rtype: bool
+        :param update_tree: Update the tree, defaults to False
+        :param update_tree: bool, optional 
         """
         # History Managed
         if apply and (x, y) != self.history.last:
