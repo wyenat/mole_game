@@ -237,7 +237,7 @@ class GraphicalUserInterface:
         :param board: The board shown
         :type board: Board """
         self.master = Tk()
-        self.master.title("DreamAI game")
+        self.master.title("wyenat's mole game")
         self.master.grid()
         self.board = board
         ## Menu
